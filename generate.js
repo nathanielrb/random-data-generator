@@ -1,6 +1,11 @@
 var helpers = require('./sparql-helpers');
 var generators = require('./random-data-generators.js');
 
+var N_STUDENTS = 4;
+var N_TEACHERS = 1;
+var N_CLASSES_PER_TEACHER = 1;
+var N_STUDENTS_PER_CLASS = 4;
+
 /*
  This class serves as an example of what can be done with this data
  generator.
@@ -33,26 +38,10 @@ var person = {
  */
 
 /*
- Quote class definition
-*/
-var quoteClass = "http://example.com/Quote";
-var quoteBase = "http://example.com/quotes/";
-var quoteProperties = [
-    {
-        key: "content",
-        predicate: "http://example.com/quote",
-        type: {
-            type: "string",
-            options: {}
-        }
-    }
-]
-
-/*
  Person class definition
 */
-var personClass = "http://example.com/Person";
-var personBase = "http://exampl.com/persons/";
+var personClass = "http://mu.semte.ch/vocabularies/school/Person";
+var personBase = "http://mu.semte.ch/school/people/";
 var personProperties = [
     {   key: "name",
         predicate: "http://xmlns.com/foaf/0.1/name",
@@ -70,29 +59,180 @@ var personProperties = [
         }
     },
     {
-        key: "quotes",
-        predicate: "http://example.com/madeQuote",
+        key: "role", // student, teacher, principle
+        predicate: "http://mu.semte.ch/vocabularies/school/role",
+        type: {
+            type: "string",
+            options: {}
+        }
+    },
+];
+
+
+/*
+ Grade class definition
+*/
+var gradeClass = "http://mu.semte.ch/vocabularies/school/Grade";
+var gradeBase = "http://mu.semte.ch/school/grades/";
+var gradeProperties = [
+    {
+        key: "points",
+        predicate: "http://mu.semte.ch/vocabularies/school/points",
+        type: {
+            type: "number",
+            options: {}
+        }
+    },
+    {
+        key: "student",
+        predicate: "http://mu.semte.ch/vocabularies/school/gradeRecipient",
         type: {
             type: "relation",
             options: {
-                relationClass: quoteClass,
-                relationBase: quoteBase,
-                relationProperties: quoteProperties
+                relationClass: personClass,
+                relationBase: personBase,
+                relationProperties: personProperties
             }
         }
     }
-];
+]
+
+/* 
+Subject class definition
+*/
+var subjectClass = "http://mu.semte.ch/vocabularies/school/Subject";
+var subjectBase = "http://mu.semte.ch/school/subjects/";
+var subjectProperties = [
+    {
+        key: "name",
+        predicate: "http://purl.org/dc/terms/title",
+        type: {
+            type: "string",
+            options: {}
+        }
+    }
+]
 
 /*
- Creating a random person and adding random quotes to it
+ Class class definition
 */
-var person = generators.getRandomPerson();
+var classClass = "http://mu.semte.ch/vocabularies/school/Class";
+var classBase = "http://mu.semte.ch/school/classes/";
+var classProperties = [
+    {
+        key: "name",
+        predicate: "http://purl.org/dc/terms/title",
+        type: {
+            type: "string",
+            options: {}
+        }
+    },
+    {
+        key: "subject",
+        predicate: "http://purl.org/dc/terms/subject",
+        type: {
+            type: "relation",
+            options: {
+                relationClass: subjectClass,
+                relationBase: subjectBase,
+                relationProperties: subjectProperties
+            }
+        }
+    },
+    {
+        key: "teachers",
+        predicate: "http://mu.semte.ch/vocabularies/school/teacher",
+        type: {
+            type: "relation",
+            options: {
+                relationClass: personClass,
+                relationBase: personBase,
+                relationProperties: personProperties
+            }
+        }
+    },
+    {
+        key: "students",
+        predicate: "http://mu.semte.ch/vocabularies/school/student",
+        type: {
+            type: "relation",
+            options: {
+                relationClass: personClass,
+                relationBase: personBase,
+                relationProperties: personProperties
+            }
+        }
+    },
+    {
+        key: "grades",
+        predicate: "http://mu.semte.ch/vocabularies/school/grade",
+        type: {
+            type: "relation",
+            options: {
+                relationClass: gradeClass,
+                relationBase: gradeBase,
+                relationProperties: gradeProperties
+            }
+        }
+    }
+]
 
-person.quotes = [];
-for(var i = 0; i < 3; ++i) {
-    person.quotes.push({
-        content: generators.getRandomQuote()
-    });
+var result;
+
+// School Principle
+var principle = generators.getRandomPerson();
+principle.role = "principle";
+result = helpers.writeObjectToStore(principle, personClass, personBase, personProperties);
+console.log(result);
+
+// Students
+var s, students = [];
+for(var i = 0; i < 20; i++){
+    studentObj = generators.getRandomPerson();
+    studentObj.role = "student";
+    result = helpers.writeObjectToStore(studentObj, personClass, personBase, personProperties);
+    students.push(result);
 }
 
-console.log(helpers.writeObjectToStore(person, personClass, personBase, personProperties));
+// Subjects
+var subjectList = require('./subjects');
+var subjects = [], index, subj;
+for(index in subjectList.subjects){
+    subj = subjectList.subjects[index];
+    subjects[subj] = helpers.writeObjectToStore({
+        name: subj
+    }, subjectClass, subjectBase, subjectProperties);
+}
+
+// Teachers and classes
+var teacherObj, teacher, clss, classes = [];
+for(var i = 0; i < N_TEACHERS; i++){
+    teacherObj = generators.getRandomPerson();
+    teacherObj.role = "teacher";
+    teacher = helpers.writeObjectToStore(teacherObj, personClass, personBase, personProperties);
+
+    for(var j = 0; j < N_CLASSES_PER_TEACHER; j++){
+        clss = generators.getRandomClass();
+        clss.subject = [subjects[clss.subject]];
+        clss.teachers.push(teacher);
+
+        var s, grade; 
+        for(var k = 0; k < N_STUDENTS_PER_CLASS; k++){
+            do {
+                st = students[generators.getRandomNumber(0, 19)];
+            }
+            while ( clss.students.indexOf(st) > -1 )
+
+            clss.students.push(st);
+            grade = helpers.writeObjectToStore({ 
+                points: generators.getRandomNumber(0,20),
+                student: [st]
+            }, gradeClass, gradeBase, gradeProperties);
+            clss.grades.push(grade);
+
+        }
+        result = helpers.writeObjectToStore(clss, classClass, classBase, classProperties);
+        console.log(result);
+        classes.push(clss);
+    }
+}

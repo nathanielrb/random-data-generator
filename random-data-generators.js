@@ -1,4 +1,5 @@
 var names = require('./names');
+var subjects = require('./subjects');
 var quotes = require('./quotes');
 
 module.exports = {
@@ -106,6 +107,18 @@ module.exports = {
             birthDate: birthDate,
             email: email,
             tel: tel
+        }
+    },
+
+    getRandomClass: function() {
+        var subject = subjects.subjects[this.getRandomNumber(0, 8)];
+        var prefix = subjects.courseNames[this.getRandomNumber(0, 5)];
+        return {
+            subject: subject,
+            name: prefix + ' ' +  subject + ' ' + this.getRandomNumber(0, 3) + '0' + this.getRandomNumber(0, 3),
+            teachers: [],
+            students: [],
+            grades: []
         }
     }
 };
