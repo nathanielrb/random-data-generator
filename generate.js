@@ -40,7 +40,7 @@ var person = {
 /*
  Person class definition
 */
-var personClass = "http://mu.semte.ch/vocabularies/school/Person";
+var personClass = "http://xmlns.com/foaf/0.1/Person";
 var personBase = "http://mu.semte.ch/school/people/";
 var personProperties = [
     {   key: "name",
@@ -77,7 +77,7 @@ var gradeBase = "http://mu.semte.ch/school/grades/";
 var gradeProperties = [
     {
         key: "points",
-        predicate: "http://mu.semte.ch/vocabularies/school/points",
+        predicate: "http://mu.semte.ch/vocabularies/school/gradePoints",
         type: {
             type: "number",
             options: {}
@@ -141,7 +141,7 @@ var classProperties = [
     },
     {
         key: "teachers",
-        predicate: "http://mu.semte.ch/vocabularies/school/teacher",
+        predicate: "http://mu.semte.ch/vocabularies/school/hasTeacher",
         type: {
             type: "relation",
             options: {
@@ -153,7 +153,7 @@ var classProperties = [
     },
     {
         key: "students",
-        predicate: "http://mu.semte.ch/vocabularies/school/student",
+        predicate: "http://mu.semte.ch/vocabularies/school/hasStudent",
         type: {
             type: "relation",
             options: {
@@ -165,7 +165,7 @@ var classProperties = [
     },
     {
         key: "grades",
-        predicate: "http://mu.semte.ch/vocabularies/school/grade",
+        predicate: "http://mu.semte.ch/vocabularies/school/classGrade",
         type: {
             type: "relation",
             options: {
