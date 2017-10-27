@@ -1,9 +1,9 @@
 var helpers = require('./sparql-helpers');
 var generators = require('./random-data-generators.js');
 
-var N_STUDENTS = 4;
-var N_TEACHERS = 1;
-var N_CLASSES_PER_TEACHER = 1;
+var N_STUDENTS = 10;
+var N_TEACHERS = 4;
+var N_CLASSES_PER_TEACHER = 2;
 var N_STUDENTS_PER_CLASS = 4;
 
 /*
@@ -41,7 +41,7 @@ var person = {
  Person class definition
 */
 var personClass = "http://xmlns.com/foaf/0.1/Person";
-var personBase = "http://mu.semte.ch/school/people/";
+var personBase = "http://mu.semte.ch/users/";
 var personProperties = [
     {   key: "name",
         predicate: "http://xmlns.com/foaf/0.1/name",
@@ -182,17 +182,20 @@ var result;
 // School Principle
 var principle = generators.getRandomPerson();
 principle.role = "principle";
+principle.uri = "<http://mu.semte.ch/users/principle>";
 result = helpers.writeObjectToStore(principle, personClass, personBase, personProperties);
 console.log(result);
 
 // Students
 var s, students = [];
-for(var i = 0; i < 20; i++){
+for(var i = 0; i < N_STUDENTS; i++){
     studentObj = generators.getRandomPerson();
     studentObj.role = "student";
+    studentObj.uri = "<http://mu.semte.ch/users/student" + i + ">";
     result = helpers.writeObjectToStore(studentObj, personClass, personBase, personProperties);
     students.push(result);
 }
+console.log(students);
 
 // Subjects
 var subjectList = require('./subjects');
@@ -203,12 +206,14 @@ for(index in subjectList.subjects){
         name: subj
     }, subjectClass, subjectBase, subjectProperties);
 }
+console.log(subjects);
 
 // Teachers and classes
 var teacherObj, teacher, clss, classes = [];
 for(var i = 0; i < N_TEACHERS; i++){
     teacherObj = generators.getRandomPerson();
     teacherObj.role = "teacher";
+    teacherObj.uri = "<http://mu.semte.ch/users/teacher" + i + ">";
     teacher = helpers.writeObjectToStore(teacherObj, personClass, personBase, personProperties);
 
     for(var j = 0; j < N_CLASSES_PER_TEACHER; j++){
@@ -219,13 +224,17 @@ for(var i = 0; i < N_TEACHERS; i++){
         var s, grade; 
         for(var k = 0; k < N_STUDENTS_PER_CLASS; k++){
             do {
-                st = students[generators.getRandomNumber(0, 19)];
+                st = students[generators.getRandomNumber(0, N_STUDENTS-1)];
             }
             while ( clss.students.indexOf(st) > -1 )
-
             clss.students.push(st);
+
+            console.log("STUDENTS:");
+            console.log(clss.students);
+
+
             grade = helpers.writeObjectToStore({ 
-                points: generators.getRandomNumber(0,20),
+                points: generators.getRandomNumber(0, 20),
                 student: [st]
             }, gradeClass, gradeBase, gradeProperties);
             clss.grades.push(grade);

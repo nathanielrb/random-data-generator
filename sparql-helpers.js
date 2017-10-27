@@ -16,9 +16,14 @@ module.exports = {
       ```
     */
     getQuery: function(query, sparqlEndpoint) {
-        sparqlEndpoint = typeof sparqlEndpoint !== 'undefined' ? sparqlEndpoint : 'http://localhost:8890/sparql';
+        sparqlEndpoint = typeof sparqlEndpoint !== 'undefined' ? sparqlEndpoint : 'http://localhost:4027/sparql';
         var encoded_query = encodeURIComponent(query);
-        request(sparqlEndpoint + '?query=' + encoded_query, function (error, response, body) {
+        request({
+            url: sparqlEndpoint + '?query=' + encoded_query,
+            headers: {
+                'mu-session-id': 'root-session'
+            }
+        }, function (error, response, body) {
             return body;
         });
     },
@@ -88,8 +93,8 @@ module.exports = {
       The return value will be a hash containing the URI and the UUID for John Snow.
     */
     writeObjectToStore: function(data, resourceClass, resourceBase, properties) {
-        var uuid = uuidv4();
-        var uri = "<" + resourceBase + uuid + ">";
+        var uuid = data.uuid || uuidv4();
+        var uri = data.uri || "<" + resourceBase + uuid + ">";
 
         query = "INSERT DATA { GRAPH " + "<http://mu.semte.ch/application> { ";
         query += uri + " a <" + resourceClass + ">; ";
