@@ -1,5 +1,10 @@
-var helpers = require('./sparql-helpers');
-var generators = require('./random-data-generators.js');
+// var helpers = require('./sparql-helpers');
+// var generators = require('./random-data-generators.js');
+// var subjectList = require('./subjects');
+
+var helpers = require('/app/sparql-helpers');
+var generators = require('/app/random-data-generators.js');
+var subjectList = require('/app/subjects');
 
 var N_STUDENTS = 10;
 var N_TEACHERS = 4;
@@ -179,69 +184,79 @@ var classProperties = [
 
 var result;
 
-// School Principle
-var principle = generators.getRandomPerson();
-principle.role = "principle";
-principle.uri = "<http://mu.semte.ch/users/principle>";
-result = helpers.writeObjectToStore(principle, personClass, personBase, personProperties);
-console.log(result);
+var run = function(){
+    console.log("Running");
+    // School Principle
+    var principle = generators.getRandomPerson();
+    principle.role = "principle";
+    principle.uri = "<http://mu.semte.ch/users/principle>";
+    result = helpers.writeObjectToStore(principle, personClass, personBase, personProperties);
+    console.log(result);
 
-// Students
-var s, students = [];
-for(var i = 0; i < N_STUDENTS; i++){
-    studentObj = generators.getRandomPerson();
-    studentObj.role = "student";
-    studentObj.uri = "<http://mu.semte.ch/users/student" + i + ">";
-    result = helpers.writeObjectToStore(studentObj, personClass, personBase, personProperties);
-    students.push(result);
-}
-console.log(students);
+    // Students
+    var s, students = [], studentObj;
+    for(var i = 0; i < N_STUDENTS; i++){
+        studentObj = generators.getRandomPerson();
+        studentObj.role = "student";
+        studentObj.uri = "<http://mu.semte.ch/users/student" + i + ">";
+        result = helpers.writeObjectToStore(studentObj, personClass, personBase, personProperties);
+        students.push(result);
+    }
+    console.log(students);
 
-// Subjects
-var subjectList = require('./subjects');
-var subjects = [], index, subj;
-for(index in subjectList.subjects){
-    subj = subjectList.subjects[index];
-    subjects[subj] = helpers.writeObjectToStore({
-        name: subj
-    }, subjectClass, subjectBase, subjectProperties);
-}
-console.log(subjects);
+    // Subjects
+    var subjects = [], index, subj;
+    for(index in subjectList.subjects){
+        subj = subjectList.subjects[index];
+        subjects[subj] = helpers.writeObjectToStore({
+            name: subj
+        }, subjectClass, subjectBase, subjectProperties);
+    }
+    console.log(subjects);
 
-// Teachers and classes
-var teacherObj, teacher, clss, classes = [];
-for(var i = 0; i < N_TEACHERS; i++){
-    teacherObj = generators.getRandomPerson();
-    teacherObj.role = "teacher";
-    teacherObj.uri = "<http://mu.semte.ch/users/teacher" + i + ">";
-    teacher = helpers.writeObjectToStore(teacherObj, personClass, personBase, personProperties);
+    // Teachers and classes
+    var teacherObj, teacher, clss, classes = [];
+    for(var i = 0; i < N_TEACHERS; i++){
+        teacherObj = generators.getRandomPerson();
+        teacherObj.role = "teacher";
+        teacherObj.uri = "<http://mu.semte.ch/users/teacher" + i + ">";
+        teacher = helpers.writeObjectToStore(teacherObj, personClass, personBase, personProperties);
 
-    for(var j = 0; j < N_CLASSES_PER_TEACHER; j++){
-        clss = generators.getRandomClass();
-        clss.subject = [subjects[clss.subject]];
-        clss.teachers.push(teacher);
+        for(var j = 0; j < N_CLASSES_PER_TEACHER; j++){
+            clss = generators.getRandomClass();
+            clss.subject = [subjects[clss.subject]];
+            clss.teachers.push(teacher);
 
-        var s, grade; 
-        for(var k = 0; k < N_STUDENTS_PER_CLASS; k++){
-            do {
-                st = students[generators.getRandomNumber(0, N_STUDENTS-1)];
+            var s, grade, st; 
+            for(var k = 0; k < N_STUDENTS_PER_CLASS; k++){
+                do {
+                    st = students[generators.getRandomNumber(0, N_STUDENTS-1)];
+                }
+                while ( clss.students.indexOf(st) > -1 )
+                clss.students.push(st);
+
+                console.log("STUDENTS:");
+                console.log(clss.students);
+
+
+                grade = helpers.writeObjectToStore({ 
+                    points: generators.getRandomNumber(0, 20),
+                    student: [st]
+                }, gradeClass, gradeBase, gradeProperties);
+                clss.grades.push(grade);
+
             }
-            while ( clss.students.indexOf(st) > -1 )
-            clss.students.push(st);
-
-            console.log("STUDENTS:");
-            console.log(clss.students);
-
-
-            grade = helpers.writeObjectToStore({ 
-                points: generators.getRandomNumber(0, 20),
-                student: [st]
-            }, gradeClass, gradeBase, gradeProperties);
-            clss.grades.push(grade);
-
+            result = helpers.writeObjectToStore(clss, classClass, classBase, classProperties);
+            console.log(result);
+            classes.push(clss);
         }
-        result = helpers.writeObjectToStore(clss, classClass, classBase, classProperties);
-        console.log(result);
-        classes.push(clss);
     }
 }
+
+module.exports = {
+    run: run
+}
+
+const repl = require('repl');
+
+

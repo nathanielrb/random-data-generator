@@ -16,12 +16,12 @@ module.exports = {
       ```
     */
     getQuery: function(query, sparqlEndpoint) {
-        sparqlEndpoint = typeof sparqlEndpoint !== 'undefined' ? sparqlEndpoint : 'http://localhost:4027/sparql';
+        sparqlEndpoint = typeof sparqlEndpoint !== 'undefined' ? sparqlEndpoint : 'http://database:8890/sparql';
         var encoded_query = encodeURIComponent(query);
         request({
             url: sparqlEndpoint + '?query=' + encoded_query,
             headers: {
-                'mu-session-id': 'root-session'
+                'mu-session-id': 'session0'
             }
         }, function (error, response, body) {
             return body;
@@ -96,7 +96,7 @@ module.exports = {
         var uuid = data.uuid || uuidv4();
         var uri = data.uri || "<" + resourceBase + uuid + ">";
 
-        query = "INSERT DATA { GRAPH " + "<http://mu.semte.ch/application> { ";
+        var query = "INSERT DATA { GRAPH " + "<http://mu.semte.ch/application> { ";
         query += uri + " a <" + resourceClass + ">; ";
         query += "<http://mu.semte.ch/vocabularies/core/uuid> \"" +  uuid + "\";";
 
@@ -108,6 +108,7 @@ module.exports = {
             return property.type.type !== "relation";
         });
 
+        var property, predicate, key, type, options, value;
         for(property in properties) {
             predicate = properties[property]['predicate'];
             key = properties[property]['key'];
@@ -117,7 +118,8 @@ module.exports = {
 
             query += "<" + predicate + "> " + value + ";"
         }
-
+        
+        var relation, rel;
         for(relation in relations) {
             var relationKey = relations[relation].key;
             var relationPredicate = relations[relation].predicate;

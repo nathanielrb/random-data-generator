@@ -1,12 +1,17 @@
-import { app, query } from 'mu';
+// import { app, query } from 'mu';
+import mu from 'mu';
 
-app.get('/', function( req, res ) {
+var generator = require('/app/generate');
+
+mu.app.get('/', function( req, res ) {
   res.send('Hello mu-javascript-template');
 } );
 
 
-app.get('/generate', function( req, res ) {
-    
+mu.app.post('/generate', function( req, res ) {
+    console.log("starting...");
+    generator.run();
+    res.send('OK');
   // query( myQuery )
   //   .then( function(response) {
   //     res.send( JSON.stringify( response ) );
