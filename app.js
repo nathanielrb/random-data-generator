@@ -8,9 +8,9 @@ mu.app.get('/', function( req, res ) {
 } );
 
 
-mu.app.post('/generate', function( req, res ) {
+mu.app.post('/generate', function(req, res) {
     console.log("starting...");
-    generator.run();
+    generator.run(req);
     res.send('OK');
   // query( myQuery )
   //   .then( function(response) {

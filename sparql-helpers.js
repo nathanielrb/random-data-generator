@@ -15,13 +15,13 @@ module.exports = {
       var result = getQuery(query, endpoint);
       ```
     */
-    getQuery: function(query, sparqlEndpoint) {
+    getQuery: function(req, query, sparqlEndpoint) {
         sparqlEndpoint = typeof sparqlEndpoint !== 'undefined' ? sparqlEndpoint : 'http://database:8890/sparql';
         var encoded_query = encodeURIComponent(query);
         request({
             url: sparqlEndpoint + '?query=' + encoded_query,
             headers: {
-                'mu-session-id': 'session0'
+                'mu-session-id': req.header('mu-session-id')
             }
         }, function (error, response, body) {
             return body;
@@ -92,7 +92,7 @@ module.exports = {
       The result of this call will put John Snow in the triple store, with the type character, a mu uuid and the passed properties.
       The return value will be a hash containing the URI and the UUID for John Snow.
     */
-    writeObjectToStore: function(data, resourceClass, resourceBase, properties) {
+    writeObjectToStore: function(req, data, resourceClass, resourceBase, properties) {
         var uuid = data.uuid || uuidv4();
         var uri = data.uri || "<" + resourceBase + uuid + ">";
 
@@ -144,7 +144,7 @@ module.exports = {
 
         query += " } }";
 
-        this.getQuery(query);
+        this.getQuery(req, query);
 
         return {
             uuid: uuid,

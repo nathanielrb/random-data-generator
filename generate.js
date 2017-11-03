@@ -184,13 +184,12 @@ var classProperties = [
 
 var result;
 
-var run = function(){
-    console.log("Running");
+var run = function(req){
     // School Principle
     var principle = generators.getRandomPerson();
     principle.role = "principle";
     principle.uri = "<http://mu.semte.ch/users/principle>";
-    result = helpers.writeObjectToStore(principle, personClass, personBase, personProperties);
+    result = helpers.writeObjectToStore(req, principle, personClass, personBase, personProperties);
     console.log(result);
 
     // Students
@@ -199,7 +198,7 @@ var run = function(){
         studentObj = generators.getRandomPerson();
         studentObj.role = "student";
         studentObj.uri = "<http://mu.semte.ch/users/student" + i + ">";
-        result = helpers.writeObjectToStore(studentObj, personClass, personBase, personProperties);
+        result = helpers.writeObjectToStore(req, studentObj, personClass, personBase, personProperties);
         students.push(result);
     }
     console.log(students);
@@ -208,7 +207,7 @@ var run = function(){
     var subjects = [], index, subj;
     for(index in subjectList.subjects){
         subj = subjectList.subjects[index];
-        subjects[subj] = helpers.writeObjectToStore({
+        subjects[subj] = helpers.writeObjectToStore(req, {
             name: subj
         }, subjectClass, subjectBase, subjectProperties);
     }
@@ -220,7 +219,7 @@ var run = function(){
         teacherObj = generators.getRandomPerson();
         teacherObj.role = "teacher";
         teacherObj.uri = "<http://mu.semte.ch/users/teacher" + i + ">";
-        teacher = helpers.writeObjectToStore(teacherObj, personClass, personBase, personProperties);
+        teacher = helpers.writeObjectToStore(req, teacherObj, personClass, personBase, personProperties);
 
         for(var j = 0; j < N_CLASSES_PER_TEACHER; j++){
             clss = generators.getRandomClass();
@@ -239,14 +238,14 @@ var run = function(){
                 console.log(clss.students);
 
 
-                grade = helpers.writeObjectToStore({ 
+                grade = helpers.writeObjectToStore(req, { 
                     points: generators.getRandomNumber(0, 20),
                     student: [st]
                 }, gradeClass, gradeBase, gradeProperties);
                 clss.grades.push(grade);
 
             }
-            result = helpers.writeObjectToStore(clss, classClass, classBase, classProperties);
+            result = helpers.writeObjectToStore(req, clss, classClass, classBase, classProperties);
             console.log(result);
             classes.push(clss);
         }
